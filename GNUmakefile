@@ -3,7 +3,6 @@
 
 PROJECTNAME=iPhoneScaffold
 APPFOLDER=$(PROJECTNAME).app
-INSTALLFOLDER=$(PROJECTNAME).app
 
 SDKVER=2.2.1
 # PLATFORM=iPhoneOS
@@ -94,7 +93,7 @@ dist:	$(PROJECTNAME) $(NIBS)
 	rm -rf $(BUILDDIR)
 	mkdir -p $(BUILDDIR)/$(APPFOLDER)
 	cp Info.plist $(BUILDDIR)/$(APPFOLDER)/Info.plist
-	@echo "APPL????" > $(BUILDDIR)/$(APPFOLDER)/PkgInfo
+	echo "APPL????" > $(BUILDDIR)/$(APPFOLDER)/PkgInfo
 ifneq (,$(RESOURCES))
 	cp -r $(RESOURCES) $(BUILDDIR)/$(APPFOLDER)
 endif
