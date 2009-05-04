@@ -1,0 +1,8 @@
+Messing about with iPhone development from the command line.
+
+This is a repo where I'll futz around trying to build up a Makefile and
+directory structure that is suitable as a minimal iPhone application structure
+that is penetrable with nothing more than an editor.  No IB.  No XCode.  I
+suspect that seeing things from this perspective will help me understand what
+wonderful things IB and XCode are making easy for me and take better advantage
+of them.
