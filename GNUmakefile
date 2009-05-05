@@ -8,9 +8,12 @@ SDKVER=2.2.1
 # PLATFORM=iPhoneOS
 PLATFORM=iPhoneSimulator
 SDK=/Developer/Platforms/$(PLATFORM).platform/Developer/SDKs/$(PLATFORM)$(SDKVER).sdk
+STRIP=/Developer/Platforms/$(PLATFORM).platform/Developer/usr/bin/strip
 
 ifeq (iPhoneSimulator,$(PLATFORM))
 USERDIR=~/'Library/Application Support/iPhone Simulator/User/Applications'
+CFLAGS += -arch i386
+LDFLAGS += -arch i386
 else
 # uh, sev?
 endif
@@ -20,7 +23,7 @@ CPP=/Developer/Platforms/$(PLATFORM).platform/Developer/usr/bin/g++
 LD=$(CC)
 
 # You're going to need these to do anything interesting, app-wise
-LDFLAGS += -framework CoreFoundation 
+#LDFLAGS += -framework CoreFoundation 
 LDFLAGS += -framework Foundation 
 LDFLAGS += -framework UIKit 
 LDFLAGS += -framework CoreGraphics
@@ -42,18 +45,14 @@ LDFLAGS += -framework CoreGraphics
 # LDFLAGS += -framework OpenGLES
 # LDFLAGS += -framework OpenAL
 
-LDFLAGS += -L"$(SDK)/usr/lib"
-LDFLAGS += -F"$(SDK)/System/Library/Frameworks"
-LDFLAGS += -F"$(SDK)/System/Library/PrivateFrameworks"
+LDFLAGS += -isysroot $(SDK)
 
-CFLAGS += -I"/Developer/Platforms/$(PLATFORM).platform/Developer/usr/lib/gcc/*/4.0.1/include/"
-CFLAGS += -I"$(SDK)/usr/include"
-CFLAGS += -I"/Developer/Platforms/$(PLATFORM).platform/Developer/usr/include/"
-# CFLAGS += -I/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator$(SDKVER).sdk/usr/include
+CFLAGS += -x objective-c -fmessage-length=0 -pipe
+CFLAGS += -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -Wreturn-type
+CFLAGS += -Wunused-variable -D__IPHONE_OS_VERSION_MIN_REQUIRED=20000
+CFLAGS += -isysroot $(SDK) -fvisibility=hidden
+CFLAGS += -mmacosx-version-min=10.5 -gdwarf-2
 CFLAGS += -DDEBUG -std=c99
-CFLAGS += -Diphoneos_version_min=$(SDKVER)
-CFLAGS += -F"$(SDK)/System/Library/Frameworks"
-CFLAGS += -F"$(SDK)/System/Library/PrivateFrameworks"
 
 CPPFLAGS=$(CFLAGS)
 
@@ -93,26 +92,28 @@ dist:	$(PROJECTNAME) $(NIBS)
 	rm -rf $(BUILDDIR)
 	mkdir -p $(BUILDDIR)/$(APPFOLDER)
 	cp Info.plist $(BUILDDIR)/$(APPFOLDER)/Info.plist
-	echo "APPL????" > $(BUILDDIR)/$(APPFOLDER)/PkgInfo
+	echo -n "APPL????" > $(BUILDDIR)/$(APPFOLDER)/PkgInfo
 ifneq (,$(RESOURCES))
 	cp -r $(RESOURCES) $(BUILDDIR)/$(APPFOLDER)
 endif
 ifneq (,$(NIBS))
 	mv $(NIBS) $(BUILDDIR)/$(APPFOLDER)
 endif
+	$(STRIP) $(PROJECTNAME)
 	mv $(PROJECTNAME) $(BUILDDIR)/$(APPFOLDER)
+	touch -c $(BUILDDIR)/$(APPFOLDER)
 
 uuid:
 	uuidgen > $@
 
 install: dist uuid
-	rm -r $(DESTDIR)
+	rm -fr $(DESTDIR)
 	mkdir -p $(DESTDIR)/Documents $(DESTDIR)/Library/Preferences $(DESTDIR)/tmp
 	cp -r $(BUILDDIR)/$(APPFOLDER) $(DESTDIR)
 	echo "(version 1)\n(debug deny)\n(allow default)" > $(SBFILE)
 
 uninstall:
-	rm -r $(DESTDIR)
+	rm -fr $(DESTDIR)
 
 clean:
 	rm -f $(SRCDIR)/*.o *.o
